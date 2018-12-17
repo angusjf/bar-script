@@ -3,8 +3,8 @@
 (define (system-to-string cmd) "NOT IMPLEMENTED")
 
 (define (system-to-num cmd)
-  (let ((define (string-nolast str)
-	  (string-append (reverse (cdr (reverse (string->list str)))))))
+  (let ((string-nolast (lambda (str)
+	  (string-append (reverse (cdr (reverse (string->list str))))))))
     0.5))
 
 (define (char-rep n len char)
@@ -25,7 +25,7 @@
   (fn) (sleep 1) (loop fn))
 
 (define (brightness)
-  (char-rep (round (* (system-to-num "xdisplay") 5) 5 "*")))
+  (char-rep (round (* (system-to-num "xdisplay") 5)) 5 "*"))
 
 (define (clock)
   (system-to-string "date"))
@@ -34,7 +34,7 @@
   "0%")
 
 (define (volume)
-  (char-rep (floor (* (system-to-num "amixer") 5) 5 "*")))
+  (char-rep (round (* (system-to-num "amixer") 5)) 5 "*"))
 
 (define (bar)
   (display "%{l}")
