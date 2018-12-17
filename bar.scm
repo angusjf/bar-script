@@ -1,29 +1,40 @@
 #!/usr/bin/scm -f
 
-;;; (define (trim str) (let (lst (string->list str))))
-(define (trim str) str)
+(define (system-to-string cmd) "NOT IMPLEMENTED")
 
-(define (nchars n c) 
-  (if (= n 0)
-      '()
-      (cons c (nchars (- n 1) c))))
+(define (system-to-num cmd)
+  (let ((define (string-nolast str)
+	  (string-append (reverse (cdr (reverse (string->list str)))))))
+    0.5))
 
-(define (string-join)
+(define (char-rep n len char)
+  (letrec ((string-join (lambda (lst join)
+			  (if (null? lst)
+			      lst
+			      (if (null? (cdr lst))
+				  (car lst)
+				  (string-join
+				    (cons
+				      (string-append (car lst) join (car (cdr lst)))
+				      (cdr (cdr lst))) join)))))
+	   (nchars (lambda (n c) (if (= n 0) '() (cons c (nchars (- n 1) c))))))
+    (string-append
+      (string-join (nchars n "*") " ") " " (string-join (nchars (- len n) " ") " "))))
 
 (define (loop fn)
-  (eval fn)
-  (sleep 1)
-  (loop fn))
+  (fn) (sleep 1) (loop fn))
 
 (define (brightness)
-  (string-join (nchars 5 "*") " "))
+  (char-rep (round (* (system-to-num "xdisplay") 5) 5 "*")))
 
 (define (clock)
-  (trim (system "date")))
+  (system-to-string "date"))
 
-(define (battery) "0%")
+(define (battery)
+  "0%")
 
-(define (volume) "~ ~ ~ ~ ~")
+(define (volume)
+  (char-rep (floor (* (system-to-num "amixer") 5) 5 "*")))
 
 (define (bar)
   (display "%{l}")
@@ -36,6 +47,6 @@
   (display (volume))
   (newline))
 
-(loop '(bar))
+(loop bar)
 
 ;;; echo $(awk -F'[][]' '/dB/ { print $2 }' <(amixer sget Master) | rev | cut -c 2- | rev)
