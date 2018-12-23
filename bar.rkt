@@ -1,52 +1,75 @@
 #lang racket
 
-(define (system-to-string cmd) "NOT IMPLEMENTED")
+;;; shell commands
 
-(define (system-to-num cmd)
-  (let ((string-nolast (lambda (str)
-	  (string-append (reverse (cdr (reverse (string->list str))))))))
-    0.5))
+(define brightness-cmd
+  "xbacklight | sed 's/.*\\(.*\\)%.*/\\1/'")
+
+(define clock-cmd
+  "date +%H:%M")
+
+(define battery-cmd
+  "acpi | sed 's/.*,\\(.*\\)%,.*/\\1/'")
+
+(define volume-cmd
+  "amixer sget Master | tail -n 1 | sed 's/.*\\[\\(.*\\)%\\].*/\\1/'")
+
+;;; helper functions
+
+(define (string-nolast str)
+  (list->string (reverse (cdr (reverse (string->list str))))))
+
+(define (system-to-string cmd) 
+  (string-nolast (with-output-to-string (lambda () (system cmd)))))
+
+(define (string-reverse str)
+  (list->string (reverse (string->list str))))
+
+(define (system-to-num cmd) (string->number (system-to-string cmd)))
+
+(define (string-join lst join)
+  (if (null? lst)
+      ""
+      (if (null? (cdr lst))
+	  (car lst)
+	  (string-join
+	    (cons
+	      (string-append (car lst) join (car (cdr lst)))
+	      (cdr (cdr lst)))
+	    join))))
+
+(define (nchars n c) (if (= n 0) '() (cons c (nchars (- n 1) c))))
 
 (define (char-rep n len char)
-  (letrec ((string-join (lambda (lst join)
-			  (if (null? lst)
-			      lst
-			      (if (null? (cdr lst))
-				  (car lst)
-				  (string-join
-				    (cons
-				      (string-append (car lst) join (car (cdr lst)))
-				      (cdr (cdr lst))) join)))))
-	   (nchars (lambda (n c) (if (= n 0) '() (cons c (nchars (- n 1) c))))))
-    (string-append
-      (string-join (nchars n "*") " ") " " (string-join (nchars (- len n) " ") " "))))
+  (string-append
+    (string-join (nchars n char) " ")
+    " "
+    (string-join (nchars (- len n) " ") " ")))
 
-(define (loop fn)
-  (fn) (sleep 1) (loop fn))
+(define (slow-print-loop str-fn t)
+  (display (str-fn)) (sleep t) (slow-print-loop str-fn t))
+
+;;; functions
 
 (define (brightness)
-  (char-rep (round (* (system-to-num "xdisplay") 5)) 5 "*"))
+  (char-rep (round (* (/ (system-to-num brightness-cmd) 100) 5)) 5 "*"))
 
 (define (clock)
-  (system-to-string "date"))
+  (system-to-string clock-cmd))
 
 (define (battery)
-  "0%")
+  (system-to-string battery-cmd))
 
 (define (volume)
-  (char-rep (round (* (system-to-num "amixer") 5)) 5 "*"))
+  (string-reverse
+    (char-rep (round (* (/ (system-to-num volume-cmd) 100) 5)) 5 "~")))
+
+;;; bar
 
 (define (bar)
-  (display "%{l}")
-  (display (brightness))
-  (display "%{c}")
-  (display (clock))
-  (display " ")
-  (display (battery))
-  (display "%{r}")
-  (display (volume))
-  (newline))
+  (string-append
+    " %{l}" (brightness) "%{c}" (clock) " " (battery) "%{r}" (volume) " \n"))
 
-(loop bar)
+;;; main
 
-;;; echo $(awk -F'[][]' '/dB/ { print $2 }' <(amixer sget Master) | rev | cut -c 2- | rev)
+(slow-print-loop bar 1)
