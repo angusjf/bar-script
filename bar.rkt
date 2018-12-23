@@ -1,4 +1,4 @@
-#!/usr/bin/scm -f
+#lang racket
 
 (define (system-to-string cmd) "NOT IMPLEMENTED")
 
