@@ -71,4 +71,9 @@
 
 ;;; main
 
-(forever (lambda () (display (get-bar)) (sleep 1)))
+(file-stream-buffer-mode (current-output-port) 'line)
+
+(forever
+  (lambda ()
+    (display (get-bar))
+    (sleep 1)))
