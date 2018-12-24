@@ -27,10 +27,12 @@
 (define (nchars n c) (if (= n 0) '() (cons c (nchars (- n 1) c))))
 
 (define (char-rep n len char)
-  (string-append
-    (string-join (nchars n char) " ")
-    " "
-    (string-join (nchars (- len n) " ") " ")))
+  (if (= n len)
+      (string-join (nchars n char) " ")
+      (string-append
+	(string-join (nchars n char) " ")
+	" "
+	(string-join (nchars (- len n) " ") " "))))
 
 (define (forever fn) (fn) (forever fn))
 
