@@ -69,7 +69,7 @@
 
 (define (get-bar)
   (string-append
-    " %{l}" (brightness) "%{c}" (clock) " " (battery) "%{r}" (volume) " \n"))
+    "%{l} " (brightness) "%{c}" (clock) " " (battery) "%{r}" (volume) " \n"))
 
 ;;; main
 
