@@ -1,19 +1,5 @@
 #lang racket
 
-;;; shell commands
-
-(define brightness-cmd
-  "xbacklight | sed 's/.*\\(.*\\)%.*/\\1/'")
-
-(define clock-cmd
-  "date +%H:%M")
-
-(define battery-cmd
-  "acpi | sed 's/.*,\\(.*\\)%,.*/\\1/'")
-
-(define volume-cmd
-  "amixer sget Master | tail -n 1 | sed 's/.*\\[\\(.*\\)%\\].*/\\1/'")
-
 ;;; helper functions
 
 (define (string-nolast str)
@@ -46,8 +32,21 @@
     " "
     (string-join (nchars (- len n) " ") " ")))
 
-(define (slow-print-loop str-fn t)
-  (display (str-fn)) (sleep t) (slow-print-loop str-fn t))
+(define (forever fn) (fn) (forever fn))
+
+;;; shell commands
+
+(define brightness-cmd
+  "xbacklight | sed 's/.*\\(.*\\)%.*/\\1/'")
+
+(define clock-cmd
+  "date +%H:%M")
+
+(define battery-cmd
+  "acpi | sed 's/.*, \\(.*%\\),.*/\\1/'")
+
+(define volume-cmd
+  "amixer sget Master | tail -n 1 | sed 's/.*\\[\\(.*\\)%\\].*/\\1/'")
 
 ;;; functions
 
@@ -66,10 +65,10 @@
 
 ;;; bar
 
-(define (bar)
+(define (get-bar)
   (string-append
     " %{l}" (brightness) "%{c}" (clock) " " (battery) "%{r}" (volume) " \n"))
 
 ;;; main
 
-(slow-print-loop bar 1)
+(forever (lambda () (display (get-bar)) (sleep 1)))
